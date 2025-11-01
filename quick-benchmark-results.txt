@@ -1,0 +1,39 @@
+=== Quick Benchmark Verification ===
+Test: 10,000 requests, small payloads (64-8192 bytes), TCP
+Date: Sat Nov  1 16:37:12 CET 2025
+System: Linux IBM650 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+Generating test data...
+Successfully wrote benchmark data to benchmark_data.bin
+  - Number of requests: 10000
+  - Data block size: 8 KB
+
+Testing C (httpc)...
+httpc_client: completed 10000 requests.
+real 0.75
+user 0.06
+sys 0.34
+C (httpc): 0.75s
+
+Testing C++ (httpcpp)...
+httpcpp_client: completed 10000 requests.
+real 0.74
+user 0.03
+sys 0.36
+C++ (httpcpp): 0.74s
+
+Testing Rust (httprust)...
+httprust_client: completed 10000 requests.
+real 0.75
+user 0.04
+sys 0.34
+Rust (httprust): 0.75s
+
+Testing Python (httppy)...
+httppy_client: completed 10000 requests and saved latencies to /dev/null.
+real 0.98
+user 0.37
+sys 0.32
+Python (httppy): 0.98s
+
+=== Quick benchmark complete ===
