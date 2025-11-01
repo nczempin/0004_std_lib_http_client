@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
+	httperrors "github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
 )
 
 var unixTestCounter uint64
@@ -86,16 +86,16 @@ func TestUnixTransport_Connect_Failure_NoSuchFile(t *testing.T) {
 		t.Fatal("Expected error on non-existent socket")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.SocketConnectFailure {
+	if *httpErr.TransportErr != httperrors.SocketConnectFailure {
 		t.Errorf("Expected SocketConnectFailure, got %v", *httpErr.TransportErr)
 	}
 }
@@ -188,16 +188,16 @@ func TestUnixTransport_Read_Failure_ConnectionClosed(t *testing.T) {
 		t.Fatal("Expected error on closed connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.ConnectionClosed {
+	if *httpErr.TransportErr != httperrors.ConnectionClosed {
 		t.Errorf("Expected ConnectionClosed, got %v", *httpErr.TransportErr)
 	}
 }
@@ -270,9 +270,9 @@ func TestUnixTransport_Write_Failure_ClosedConnection(t *testing.T) {
 		t.Fatal("Expected error on write to closed connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
@@ -280,7 +280,7 @@ func TestUnixTransport_Write_Failure_ClosedConnection(t *testing.T) {
 	}
 
 	// Accept either SocketWriteFailure or ConnectionClosed
-	if *httpErr.TransportErr != errors.SocketWriteFailure && *httpErr.TransportErr != errors.ConnectionClosed {
+	if *httpErr.TransportErr != httperrors.SocketWriteFailure && *httpErr.TransportErr != httperrors.ConnectionClosed {
 		t.Errorf("Expected SocketWriteFailure or ConnectionClosed, got %v", *httpErr.TransportErr)
 	}
 }
@@ -293,16 +293,16 @@ func TestUnixTransport_Write_Failure_NoConnection(t *testing.T) {
 		t.Fatal("Expected error when writing without connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.SocketWriteFailure {
+	if *httpErr.TransportErr != httperrors.SocketWriteFailure {
 		t.Errorf("Expected SocketWriteFailure, got %v", *httpErr.TransportErr)
 	}
 }
@@ -316,16 +316,16 @@ func TestUnixTransport_Read_Failure_NoConnection(t *testing.T) {
 		t.Fatal("Expected error when reading without connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.SocketReadFailure {
+	if *httpErr.TransportErr != httperrors.SocketReadFailure {
 		t.Errorf("Expected SocketReadFailure, got %v", *httpErr.TransportErr)
 	}
 }

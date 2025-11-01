@@ -1,11 +1,13 @@
 package transport
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 
-	"github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
+	httperrors "github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
 )
 
 // TcpTransport implements the Transport interface using TCP sockets
@@ -30,19 +32,19 @@ func (t *TcpTransport) Connect(host string, port uint16) error {
 		if strings.Contains(err.Error(), "no such host") ||
 			strings.Contains(err.Error(), "Name or service not known") ||
 			strings.Contains(err.Error(), "Temporary failure in name resolution") {
-			return errors.NewTransportError(errors.DnsFailure, err)
+			return httperrors.NewTransportError(httperrors.DnsFailure, err)
 		}
 		if strings.Contains(err.Error(), "connection refused") {
-			return errors.NewTransportError(errors.SocketConnectFailure, err)
+			return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
 		}
-		return errors.NewTransportError(errors.SocketConnectFailure, err)
+		return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
 	}
 
 	// Set TCP_NODELAY to disable Nagle's algorithm for lower latency
 	if tcpConn, ok := conn.(*net.TCPConn); ok {
 		if err := tcpConn.SetNoDelay(true); err != nil {
 			conn.Close()
-			return errors.NewTransportError(errors.InitFailure, err)
+			return httperrors.NewTransportError(httperrors.InitFailure, err)
 		}
 	}
 
@@ -53,16 +55,16 @@ func (t *TcpTransport) Connect(host string, port uint16) error {
 // Write sends data over the TCP connection
 func (t *TcpTransport) Write(buf []byte) (int, error) {
 	if t.conn == nil {
-		return 0, errors.NewTransportError(errors.SocketWriteFailure, nil)
+		return 0, httperrors.NewTransportError(httperrors.SocketWriteFailure, nil)
 	}
 
 	n, err := t.conn.Write(buf)
 	if err != nil {
 		if strings.Contains(err.Error(), "broken pipe") ||
 			strings.Contains(err.Error(), "connection reset") {
-			return n, errors.NewTransportError(errors.ConnectionClosed, err)
+			return n, httperrors.NewTransportError(httperrors.ConnectionClosed, err)
 		}
-		return n, errors.NewTransportError(errors.SocketWriteFailure, err)
+		return n, httperrors.NewTransportError(httperrors.SocketWriteFailure, err)
 	}
 
 	return n, nil
@@ -71,20 +73,15 @@ func (t *TcpTransport) Write(buf []byte) (int, error) {
 // Read receives data from the TCP connection
 func (t *TcpTransport) Read(buf []byte) (int, error) {
 	if t.conn == nil {
-		return 0, errors.NewTransportError(errors.SocketReadFailure, nil)
+		return 0, httperrors.NewTransportError(httperrors.SocketReadFailure, nil)
 	}
 
 	n, err := t.conn.Read(buf)
 	if err != nil {
-		if err.Error() == "EOF" || n == 0 && len(buf) > 0 {
-			return n, errors.NewTransportError(errors.ConnectionClosed, err)
+		if errors.Is(err, io.EOF) || n == 0 && len(buf) > 0 {
+			return n, httperrors.NewTransportError(httperrors.ConnectionClosed, err)
 		}
-		return n, errors.NewTransportError(errors.SocketReadFailure, err)
-	}
-
-	// Check for connection closed (0 bytes read with non-empty buffer)
-	if n == 0 && len(buf) > 0 {
-		return n, errors.NewTransportError(errors.ConnectionClosed, nil)
+		return n, httperrors.NewTransportError(httperrors.SocketReadFailure, err)
 	}
 
 	return n, nil
@@ -100,7 +97,7 @@ func (t *TcpTransport) Close() error {
 	t.conn = nil
 
 	if err != nil {
-		return errors.NewTransportError(errors.SocketCloseFailure, err)
+		return httperrors.NewTransportError(httperrors.SocketCloseFailure, err)
 	}
 
 	return nil

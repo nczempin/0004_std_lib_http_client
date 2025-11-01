@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
+	httperrors "github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
 )
 
 func setupTcpTestServer(t *testing.T, serverLogic func(net.Conn)) (string, uint16, func()) {
@@ -75,16 +75,16 @@ func TestTcpTransport_Connect_Failure_DnsError(t *testing.T) {
 		t.Fatal("Expected error on DNS failure")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.DnsFailure {
+	if *httpErr.TransportErr != httperrors.DnsFailure {
 		t.Errorf("Expected DnsFailure, got %v", *httpErr.TransportErr)
 	}
 }
@@ -98,16 +98,16 @@ func TestTcpTransport_Connect_Failure_ConnectionRefused(t *testing.T) {
 		t.Fatal("Expected error on connection refused")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.SocketConnectFailure {
+	if *httpErr.TransportErr != httperrors.SocketConnectFailure {
 		t.Errorf("Expected SocketConnectFailure, got %v", *httpErr.TransportErr)
 	}
 }
@@ -200,16 +200,16 @@ func TestTcpTransport_Read_Failure_ConnectionClosed(t *testing.T) {
 		t.Fatal("Expected error on closed connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.ConnectionClosed {
+	if *httpErr.TransportErr != httperrors.ConnectionClosed {
 		t.Errorf("Expected ConnectionClosed, got %v", *httpErr.TransportErr)
 	}
 }
@@ -282,16 +282,16 @@ func TestTcpTransport_Write_Failure_ClosedConnection(t *testing.T) {
 		t.Fatal("Expected error on write to closed connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.ConnectionClosed {
+	if *httpErr.TransportErr != httperrors.ConnectionClosed {
 		t.Errorf("Expected ConnectionClosed, got %v", *httpErr.TransportErr)
 	}
 }
@@ -304,16 +304,16 @@ func TestTcpTransport_Write_Failure_NoConnection(t *testing.T) {
 		t.Fatal("Expected error when writing without connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.SocketWriteFailure {
+	if *httpErr.TransportErr != httperrors.SocketWriteFailure {
 		t.Errorf("Expected SocketWriteFailure, got %v", *httpErr.TransportErr)
 	}
 }
@@ -327,16 +327,16 @@ func TestTcpTransport_Read_Failure_NoConnection(t *testing.T) {
 		t.Fatal("Expected error when reading without connection")
 	}
 
-	httpErr, ok := err.(*errors.Error)
+	httpErr, ok := err.(*httperrors.Error)
 	if !ok {
-		t.Fatalf("Expected *errors.Error, got %T", err)
+		t.Fatalf("Expected *httperrors.Error, got %T", err)
 	}
 
 	if httpErr.TransportErr == nil {
 		t.Fatal("Expected TransportError")
 	}
 
-	if *httpErr.TransportErr != errors.SocketReadFailure {
+	if *httpErr.TransportErr != httperrors.SocketReadFailure {
 		t.Errorf("Expected SocketReadFailure, got %v", *httpErr.TransportErr)
 	}
 }
