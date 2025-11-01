@@ -5,6 +5,7 @@ pub const transport = @import("transport.zig");
 pub const tcp_transport = @import("tcp_transport.zig");
 pub const unix_transport = @import("unix_transport.zig");
 pub const http1_protocol = @import("http1_protocol.zig");
+pub const client = @import("client.zig");
 
 pub const HttpError = errors.HttpError;
 pub const Transport = transport.Transport;
@@ -16,6 +17,9 @@ pub const HttpHeader = http1_protocol.HttpHeader;
 pub const HttpRequest = http1_protocol.HttpRequest;
 pub const HttpResponse = http1_protocol.HttpResponse;
 pub const ResponseMemoryPolicy = http1_protocol.ResponseMemoryPolicy;
+pub const HttpClient = client.HttpClient;
+pub const Url = client.Url;
+pub const TransportType = client.TransportType;
 
 test {
     std.testing.refAllDecls(@This());
