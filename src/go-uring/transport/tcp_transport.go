@@ -66,26 +66,6 @@ func (t *TcpTransport) Connect(host string, port int) error {
 		)
 	}
 
-	// Set socket to non-blocking mode for io_uring
-	if err := syscall.SetNonblock(fd, true); err != nil {
-		syscall.Close(fd)
-		return errors.NewTransportError(
-			errors.TransportErrorSocketCreateFailure,
-			"failed to set non-blocking mode",
-			err,
-		)
-	}
-
-	// Set TCP_NODELAY
-	if err := syscall.SetsockoptInt(fd, syscall.IPPROTO_TCP, syscall.TCP_NODELAY, 1); err != nil {
-		syscall.Close(fd)
-		return errors.NewTransportError(
-			errors.TransportErrorSocketCreateFailure,
-			"failed to set TCP_NODELAY",
-			err,
-		)
-	}
-
 	// Convert to syscall.Sockaddr
 	var sa syscall.Sockaddr
 	if ip4 := tcpAddr.IP.To4(); ip4 != nil {
@@ -98,25 +78,22 @@ func (t *TcpTransport) Connect(host string, port int) error {
 		sa = sa6
 	}
 
-	// Submit connect operation via io_uring
-	ch := make(chan iouring.Result, 1)
-	prepReq := iouring.Connect(fd, sa)
-	if _, err := t.iour.SubmitRequest(prepReq, ch); err != nil {
-		syscall.Close(fd)
-		return errors.NewTransportError(
-			errors.TransportErrorIoUringSubmit,
-			"failed to submit connect request",
-			err,
-		)
-	}
-
-	// Wait for connect to complete
-	result := <-ch
-	if _, err := result.ReturnInt(); err != nil {
+	// Use blocking connect (io_uring connect support is limited)
+	if err := syscall.Connect(fd, sa); err != nil {
 		syscall.Close(fd)
 		return errors.NewTransportError(
 			errors.TransportErrorSocketConnectFailure,
 			fmt.Sprintf("failed to connect to %s", addr),
+			err,
+		)
+	}
+
+	// Set TCP_NODELAY after connection
+	if err := syscall.SetsockoptInt(fd, syscall.IPPROTO_TCP, syscall.TCP_NODELAY, 1); err != nil {
+		syscall.Close(fd)
+		return errors.NewTransportError(
+			errors.TransportErrorSocketCreateFailure,
+			"failed to set TCP_NODELAY",
 			err,
 		)
 	}

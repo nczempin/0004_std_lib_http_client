@@ -54,34 +54,11 @@ func (t *UnixTransport) Connect(path string, port int) error {
 		)
 	}
 
-	// Set socket to non-blocking mode for io_uring
-	if err := syscall.SetNonblock(fd, true); err != nil {
-		syscall.Close(fd)
-		return errors.NewTransportError(
-			errors.TransportErrorSocketCreateFailure,
-			"failed to set non-blocking mode",
-			err,
-		)
-	}
-
 	// Prepare Unix socket address
 	sa := &syscall.SockaddrUnix{Name: path}
 
-	// Submit connect operation via io_uring
-	ch := make(chan iouring.Result, 1)
-	prepReq := iouring.Connect(fd, sa)
-	if _, err := t.iour.SubmitRequest(prepReq, ch); err != nil {
-		syscall.Close(fd)
-		return errors.NewTransportError(
-			errors.TransportErrorIoUringSubmit,
-			"failed to submit connect request",
-			err,
-		)
-	}
-
-	// Wait for connect to complete
-	result := <-ch
-	if _, err := result.ReturnInt(); err != nil {
+	// Use blocking connect (io_uring connect support is limited)
+	if err := syscall.Connect(fd, sa); err != nil {
 		syscall.Close(fd)
 		return errors.NewTransportError(
 			errors.TransportErrorSocketConnectFailure,
