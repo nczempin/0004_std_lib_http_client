@@ -4,7 +4,11 @@ This guide explains how to run benchmarks on Windows native (not WSL2) to compar
 
 ## Purpose
 
-The project shows 7-8x slower performance on WSL2 compared to documented bare-metal Linux results. We want to test if Windows native performance is closer to bare metal or similar to WSL2.
+The documented benchmark results were from an **Intel i9-13900HX** (mobile processor, 24 cores: 8 P-cores + 16 E-cores) on bare metal Linux. Our system has an **AMD Ryzen 9 9950X** (desktop processor, 16 cores, 32 threads, Zen 5 architecture).
+
+**We cannot determine WSL2 overhead by comparing different CPUs.** To properly measure WSL2's impact, we need to test:
+- WSL2 vs Windows native (same Ryzen 9 9950X) ← **This is the goal**
+- OR WSL2 vs bare metal Linux (same Ryzen 9 9950X)
 
 ## Hardware Specs
 

@@ -1,7 +1,9 @@
-# Targeted Benchmark Report
+# Targeted Benchmark Report - WSL2
 
 **Date**: Sat Nov  1 16:57:53 CET 2025
 **System**: Linux IBM650 6.6.87.2-microsoft-standard-WSL2 #1 SMP PREEMPT_DYNAMIC Thu Jun  5 18:30:46 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+
+**⚠️ CONTEXT**: This benchmark was run on **AMD Ryzen 9 9950X** (Zen 5, 16c/32t). The documented benchmark results in the repository were from **Intel i9-13900HX** (Raptor Lake, 24 cores: 8P+16E) on bare metal Linux. **Direct time comparisons are invalid** due to different hardware. To measure WSL2 overhead, we need Windows native results on the same Ryzen 9 9950X.
 
 ## Hardware Specs
 
