@@ -224,3 +224,4 @@ The implementations prioritize:
 2. Testability (system call abstraction, dependency injection)
 3. Language idioms (different error handling per language)
 4. Benchmarkability (comprehensive performance measurement)
+- you never close issues. you create PRs against the parent issue, triage any PR review, and you can add the keywords to auto-close the issue when the PR was merged. but never close directly
