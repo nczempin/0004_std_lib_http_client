@@ -9,7 +9,11 @@ sudo apt update && sudo apt install -y \
     python3.12-venv \
     cargo \
     build-essential \
-    pkg-config
+    pkg-config \
+    libboost-all-dev \
+    libgtest-dev \
+    libcurl4-openssl-dev \
+    lcov
 
 echo "Prerequisites installed successfully!"
 echo "You can now run: bash setup.sh"
