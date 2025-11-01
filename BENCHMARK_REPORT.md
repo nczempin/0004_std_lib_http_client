@@ -83,11 +83,70 @@ For optimization work, we can:
 
 ---
 
+## Targeted Benchmark Results (Matching Documented Parameters)
+
+**Date**: Sat Nov 1 16:57:53 CET 2025
+**Environment**: WSL2 on AMD Ryzen 9 9950X (16 cores, 32 threads, 128GB host RAM)
+
+### Small Payloads (300,000 requests, 64-8192 bytes, TCP)
+
+| Implementation | WSL2 Time | Documented (bare metal) | Ratio |
+|---|---:|---:|---:|
+| C (httpc) | 27.29s | 2.681s (vectored) | **10.2x** |
+| C++ (httpcpp) | 27.02s | 2.740s (safe) | **9.9x** |
+| Rust (httprust) | 26.42s | 2.673s (unsafe) | **9.9x** |
+| Python (httppy) | 33.03s | 4.24-4.53s | **7.3-7.8x** |
+
+### Large Payloads (50,000 requests, 500KB-1MB, TCP)
+
+| Implementation | WSL2 Time | Documented (bare metal) | Ratio |
+|---|---:|---:|---:|
+| C (httpc) | 12.77s | 5.954s (vectored) | **2.1x** |
+| C++ (httpcpp) | 9.07s | 6.164s (safe) | **1.5x** |
+| Rust (httprust) | 9.50s | 9.350s (safe) | **1.0x** |
+| Python (httppy) | 20.77s | ~15s (estimated) | **~1.4x** |
+
+### Critical Findings
+
+1. **WSL2 Overhead is Workload-Dependent**:
+   - Small payloads: **~10x slower** on WSL2
+   - Large payloads: **1-2x slower** on WSL2
+   - Python overhead is less on WSL2 (relatively)
+
+2. **Performance Inversion on WSL2**:
+   - **Small payloads**: Rust fastest (26.42s), C++ close (27.02s), C slowest (27.29s) - within 3%
+   - **Large payloads**: **C++ fastest (9.07s)**, Rust close (9.50s), **C 41% slower (12.77s)**
+   - This is INVERTED from bare metal where C vectored was fastest for large payloads!
+
+3. **WSL2 Interacts Differently with I/O Patterns**:
+   - Large payload overhead is much lower (1-2x vs 10x)
+   - C's performance degrades more on WSL2 for large payloads
+   - C++ and Rust maintain better relative performance
+
+4. **Rust Performance is Consistent**:
+   - Rust safe mode: 9.50s (WSL2) vs 9.350s (bare metal) - virtually identical!
+   - Suggests Rust's I/O implementation is less affected by WSL2's network stack
+
+### Analysis
+
+The dramatic difference in overhead between small (10x) and large (1-2x) payloads suggests:
+- Small requests hit WSL2's syscall/context switch overhead repeatedly
+- Large requests are bottlenecked by throughput, where WSL2 has less overhead
+- Different I/O patterns (many small vs few large syscalls) interact differently with WSL2
+
+The performance inversion (C being slowest for large payloads on WSL2) needs investigation:
+- Is C's writev() implementation hitting a WSL2 inefficiency?
+- Are C++ and Rust using different buffering strategies?
+- Does WSL2's network stack favor certain I/O patterns?
+
+---
+
 ## Next Steps
 
 1. ✅ Quick verification complete
-2. 📋 Run full benchmark suite on WSL2 for comprehensive baseline
-3. 📋 Identify optimization opportunities from profiling
-4. 📋 Implement optimizations
-5. 📋 Re-benchmark to measure improvements
-6. 📋 (Optional) Run on bare metal for final validation
+2. ✅ Targeted benchmark complete (300k/50k parameters matching docs)
+3. 📋 Investigate C's large payload performance degradation on WSL2
+4. 📋 Profile implementations to identify bottlenecks
+5. 📋 Test Windows native performance for comparison
+6. 📋 Implement optimizations based on findings
+7. 📋 (Optional) Run on bare metal for final validation
