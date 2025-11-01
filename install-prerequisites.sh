@@ -7,6 +7,7 @@ echo "Installing build prerequisites for Ubuntu 24.04..."
 sudo apt update && sudo apt install -y \
     cmake \
     python3.12-venv \
+    python3-pip \
     build-essential \
     pkg-config \
     libboost-all-dev \

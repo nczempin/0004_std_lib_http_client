@@ -5,6 +5,8 @@
 if [ ! -d ".venv" ]; then
     python3.12 -m venv .venv;
     . .venv/bin/activate;
+    python3 -m pip install --upgrade pip
+    python3 -m pip install build
     (
         cd src/python || (echo "python source directory not found" && exit)
         python3 -m pip install -r requirements.txt
