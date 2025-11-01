@@ -124,16 +124,37 @@ pub const TcpTransport = struct {
             const fd = stream.handle;
             const flag: c_int = 1;
 
-            // Use setsockopt to set TCP_NODELAY
-            const flag_bytes = std.mem.asBytes(&flag);
-            const result = os.linux.setsockopt(
-                fd,
-                os.linux.IPPROTO.TCP,
-                os.linux.TCP.NODELAY,
-                flag_bytes.ptr,
-                @intCast(flag_bytes.len),
-            );
-            _ = result; // Ignore result for now
+            // Platform-specific setsockopt for TCP_NODELAY
+            const builtin = @import("builtin");
+            switch (builtin.os.tag) {
+                .linux => {
+                    const flag_bytes = std.mem.asBytes(&flag);
+                    _ = os.linux.setsockopt(
+                        fd,
+                        os.linux.IPPROTO.TCP,
+                        os.linux.TCP.NODELAY,
+                        flag_bytes.ptr,
+                        @intCast(flag_bytes.len),
+                    );
+                },
+                .macos, .ios, .tvos, .watchos, .freebsd, .netbsd, .openbsd, .dragonfly => {
+                    // BSD-style setsockopt
+                    _ = os.darwin.setsockopt(
+                        fd,
+                        os.darwin.IPPROTO.TCP,
+                        os.darwin.TCP.NODELAY,
+                        &flag,
+                        @sizeOf(c_int),
+                    ) catch {};
+                },
+                .windows => {
+                    // Windows uses different API, skip for now
+                    // Could use ws2_32.setsockopt if needed
+                },
+                else => {
+                    // Unsupported platform, skip TCP_NODELAY
+                },
+            }
         }
     }
 };

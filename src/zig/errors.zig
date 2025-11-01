@@ -30,6 +30,6 @@ pub fn fromSystemError(err: anyerror) HttpError {
         error.NetworkUnreachable => HttpError.SocketConnectFailure,
         error.ConnectionResetByPeer => HttpError.ConnectionClosed,
         error.BrokenPipe => HttpError.ConnectionClosed,
-        else => HttpError.SocketWriteFailure, // Default fallback
+        else => HttpError.TransportInitFailure, // Default fallback for unknown errors
     };
 }
