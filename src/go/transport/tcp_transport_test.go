@@ -32,7 +32,10 @@ func setupTcpTestServer(t *testing.T, serverLogic func(net.Conn)) (string, uint1
 
 	cleanup := func() {
 		listener.Close()
-		<-done
+		select {
+		case <-done:
+		case <-time.After(time.Second):
+		}
 	}
 
 	return addr.IP.String(), uint16(addr.Port), cleanup

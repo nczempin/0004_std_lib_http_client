@@ -67,7 +67,7 @@ func (t *UnixTransport) Read(buf []byte) (int, error) {
 
 	n, err := t.conn.Read(buf)
 	if err != nil {
-		if errors.Is(err, io.EOF) || n == 0 && len(buf) > 0 {
+		if errors.Is(err, io.EOF) || (n == 0 && len(buf) > 0) {
 			return n, httperrors.NewTransportError(httperrors.ConnectionClosed, err)
 		}
 		return n, httperrors.NewTransportError(httperrors.SocketReadFailure, err)

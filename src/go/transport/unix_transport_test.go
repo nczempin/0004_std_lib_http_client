@@ -42,7 +42,10 @@ func setupUnixTestServer(t *testing.T, serverLogic func(net.Conn)) (string, func
 
 	cleanup := func() {
 		listener.Close()
-		<-done
+		select {
+		case <-done:
+		case <-time.After(time.Second):
+		}
 		os.Remove(socketPath)
 	}
 
