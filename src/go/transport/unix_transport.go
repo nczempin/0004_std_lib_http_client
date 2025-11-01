@@ -4,7 +4,8 @@ import (
 	"errors"
 	"io"
 	"net"
-	"strings"
+	"os"
+	"syscall"
 
 	httperrors "github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
 )
@@ -26,9 +27,11 @@ func NewUnixTransport() *UnixTransport {
 func (t *UnixTransport) Connect(path string, port uint16) error {
 	conn, err := net.Dial("unix", path)
 	if err != nil {
-		// Determine the specific error type
-		if strings.Contains(err.Error(), "no such file") ||
-			strings.Contains(err.Error(), "connect: connection refused") {
+		// Classify errors using type assertions and os package helpers
+		if errors.Is(err, os.ErrNotExist) || errors.Is(err, syscall.ENOENT) {
+			return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
+		}
+		if errors.Is(err, syscall.ECONNREFUSED) {
 			return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
 		}
 		return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
@@ -46,8 +49,8 @@ func (t *UnixTransport) Write(buf []byte) (int, error) {
 
 	n, err := t.conn.Write(buf)
 	if err != nil {
-		if strings.Contains(err.Error(), "broken pipe") ||
-			strings.Contains(err.Error(), "connection reset") {
+		// Check for broken pipe or connection reset
+		if errors.Is(err, syscall.EPIPE) || errors.Is(err, syscall.ECONNRESET) {
 			return n, httperrors.NewTransportError(httperrors.ConnectionClosed, err)
 		}
 		return n, httperrors.NewTransportError(httperrors.SocketWriteFailure, err)

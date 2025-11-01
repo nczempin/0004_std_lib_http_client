@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strings"
+	"syscall"
 
 	httperrors "github.com/nczempin/0004_std_lib_http_client/httpgo/errors"
 )
@@ -28,14 +28,20 @@ func (t *TcpTransport) Connect(host string, port uint16) error {
 
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
-		// Determine the specific error type
-		if strings.Contains(err.Error(), "no such host") ||
-			strings.Contains(err.Error(), "Name or service not known") ||
-			strings.Contains(err.Error(), "Temporary failure in name resolution") {
-			return httperrors.NewTransportError(httperrors.DnsFailure, err)
-		}
-		if strings.Contains(err.Error(), "connection refused") {
-			return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
+		// Classify network errors using type assertions
+		if opErr, ok := err.(*net.OpError); ok {
+			if opErr.Op == "dial" {
+				// Check for DNS resolution failures
+				if dnsErr, ok := opErr.Err.(*net.DNSError); ok {
+					if dnsErr.IsNotFound || dnsErr.IsTemporary {
+						return httperrors.NewTransportError(httperrors.DnsFailure, err)
+					}
+				}
+				// Check for connection refused via syscall error
+				if errors.Is(opErr.Err, syscall.ECONNREFUSED) {
+					return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
+				}
+			}
 		}
 		return httperrors.NewTransportError(httperrors.SocketConnectFailure, err)
 	}
@@ -60,8 +66,8 @@ func (t *TcpTransport) Write(buf []byte) (int, error) {
 
 	n, err := t.conn.Write(buf)
 	if err != nil {
-		if strings.Contains(err.Error(), "broken pipe") ||
-			strings.Contains(err.Error(), "connection reset") {
+		// Check for broken pipe or connection reset
+		if errors.Is(err, syscall.EPIPE) || errors.Is(err, syscall.ECONNRESET) {
 			return n, httperrors.NewTransportError(httperrors.ConnectionClosed, err)
 		}
 		return n, httperrors.NewTransportError(httperrors.SocketWriteFailure, err)
