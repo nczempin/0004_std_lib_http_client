@@ -206,6 +206,51 @@ Use the included `analyse_latencies.py` script to process benchmark results:
 python analyse_latencies.py latencies/latencies_*.bin
 ```
 
+## PR Review Triage Process
+
+When receiving PR review feedback, categorize each comment by action type:
+
+### A) Quality Standard Violation → Fix Immediately on Branch
+- Bugs, correctness issues
+- Missing tests for critical paths
+- Poor error handling
+- Security issues
+- Performance regressions
+
+**Action**: Fix on the current branch, add atomic commits, comment on PR linking to commit(s)
+
+### B) Complex Quality Issue → Create Blocking Ticket First
+- Requires architectural changes
+- Needs significant refactoring
+- Would take >2 hours to fix properly
+
+**Action**: Create new issue, mark original as blocked by it, reference in PR comment, fix in separate PR
+
+### C) Reasonable Feedback to Reject
+- Stylistic preferences without clear benefit
+- Suggestions that conflict with existing patterns
+- Out of scope for this phase
+
+**Action**: Politely explain reasoning in PR comment with justification
+
+### D) Valid Future Work → Create Prioritized Ticket
+- Nice-to-have improvements
+- Optimizations that aren't critical
+- Additional features/edge cases
+- Documentation enhancements
+
+**Action**: Create issue with appropriate priority label, reference in PR comment
+
+### Workflow
+1. Read all review comments
+2. Categorize each comment (A/B/C/D)
+3. Fix all (A) items with atomic commits
+4. Create blocking issues for (B) items
+5. Write polite responses for (C) items
+6. Create future tickets for (D) items
+7. Push commits and update PR with comments
+8. Request re-review if needed
+
 ## Important Notes
 
 - **README as Documentation**: The README.md is the comprehensive guide (350KB). It explains design decisions, architecture, and includes inline code references.
