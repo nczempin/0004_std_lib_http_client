@@ -9,3 +9,4 @@ src/python/build/
 src.txt
 *.egg-info
 .coverage
+.zig-cache/
